@@ -1,0 +1,14 @@
+# For dh_kine_student.py
+roboticstoolbox-python==1.1.0   # 主工具箱
+scipy==1.8.1
+numpy>=1.21,<2                  # 矩阵运算
+pybullet
+matplotlib>=3.5
+
+# For dofbot_learn_student.py
+torch
+pandas
+scikit-learn
+
+# For main_student.py
+ffmpeg

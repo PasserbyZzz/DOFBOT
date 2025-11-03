@@ -1,0 +1,8 @@
+{
+    "hidden_layers": null,
+    "model_type": "mlp",
+    "mode": "ik",
+    "input_dim": 2,
+    "output_dim": 2,
+    "num_mixtures": null
+}

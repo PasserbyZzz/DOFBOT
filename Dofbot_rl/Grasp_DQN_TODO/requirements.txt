@@ -1,0 +1,5 @@
+gymnasium==0.29.1
+tyro
+tensorboard
+
+
