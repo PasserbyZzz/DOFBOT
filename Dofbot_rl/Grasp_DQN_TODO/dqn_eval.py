@@ -25,27 +25,25 @@ def evaluate(
     model.eval()
 
     obs, _ = envs.reset()
-    episodic_returns = []
-    step=0
-    while len(episodic_returns) < eval_episodes:
-        print(step)
+    episodic_termination = []
+    success = 0
+    while len(episodic_termination) < eval_episodes:
+
         if random.random() < epsilon:
             actions = np.array([envs.single_action_space.sample() for _ in range(envs.num_envs)])
         else:
             q_values = model(torch.Tensor(obs).to(device))
             actions = torch.argmax(q_values, dim=1).cpu().numpy()
-        print("action:", actions)
-        next_obs, _, _, _, infos = envs.step(actions)
+        next_obs, _, terminated, _, infos = envs.step(actions)
         if "final_info" in infos:
-            for info in infos["final_info"]:
-                if "episode" not in info:
-                    continue
-                print(f"eval_episode={len(episodic_returns)}, episodic_return={info['episode']['r']}")
-                episodic_returns += [info["episode"]["r"]]
+            episodic_termination.append(terminated)
+            print("Num episode:", len(episodic_termination), "terminated:", terminated)
+            if terminated:
+                success += 1
         obs = next_obs
-        step += 1
-
-    return episodic_returns
+    success_rate = success/len(episodic_termination)
+    print("Success Rate:", success_rate)
+    return success_rate
 
 def make_env(env_id, seed, idx, capture_video, run_name):
     def thunk():
@@ -65,10 +63,10 @@ if __name__ == "__main__":
     from dqn_train import QNetwork
     
     evaluate(
-        "runs/dqn_test/dqn_train_999999.cleanrl_model",
+        "runs/dqn_demo/dqn_train_5499999.cleanrl_model",
         make_env,
         "PandaEnv-v1",
-        eval_episodes=1,
+        eval_episodes=5,
         run_name=f"eval/test",
         Model=QNetwork,
         device="cpu",

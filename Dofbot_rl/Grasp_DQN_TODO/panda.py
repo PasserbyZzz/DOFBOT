@@ -5,10 +5,11 @@ import os
 
 
 class Panda:
+    # Franka Panda 机械臂类
     def __init__(self, urdfRootPath=pybullet_data.getDataPath(), initial_pos=[0, 0, 0]):
         self.urdfRootPath = urdfRootPath
-        self.pandaEndEffectorIndex = 11
-        # # upper limits for null space
+        self.pandaEndEffectorIndex = 11 # 末端执行器索引
+        # lower limits for null space
         self.ll = [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
         # upper limits for null space
         self.ul = [ 2.8973,  1.7628,  2.8973, -0.0698,  2.8973,  3.7525,  2.8973]
@@ -51,6 +52,7 @@ class Panda:
         self.inital_eepose = [state[0], state[1]]
 
     def reset(self):        
+        # 重置机械臂到初始位置
         index = 0
         for j in range(self.numJoints):
             p.changeDynamics(self.pandaUid, j, linearDamping=0, angularDamping=0)
@@ -67,7 +69,8 @@ class Panda:
         state = p.getLinkState(self.pandaUid, self.pandaEndEffectorIndex)
 
 
-    def joint_control(self,jointPoses):          
+    def joint_control(self,jointPoses):   
+        # 控制机械臂关节到指定位置       
         for i in range(self.numJoints - 2):
             p.setJointMotorControl2(bodyUniqueId=self.pandaUid, jointIndex=self.motorIndices[i], controlMode=p.POSITION_CONTROL,
                                 targetPosition=jointPoses[i], targetVelocity=0, force=200,
@@ -75,6 +78,7 @@ class Panda:
         self.gripper_control(jointPoses[-2:])
 
     def setInverseKine(self, pos, orn=None):
+        # 计算逆运动学，得到关节角度
         if orn == None:
             jointPoses = p.calculateInverseKinematics(self.pandaUid, self.pandaEndEffectorIndex, pos,
                                                       self.ll, self.ul, self.jr, self.rp)
@@ -86,6 +90,7 @@ class Panda:
 
 
     def get_jointPoses(self):
+        # 获取当前关节角度
         jointPoses= []
         for i in range(self.numJoints):
             state = p.getJointState(self.pandaUid, self.motorIndices[i])
@@ -93,6 +98,7 @@ class Panda:
         return np.array(jointPoses)
 
     def get_qvel(self):
+        # 获取当前关节速度
         qvel= []
         for i in range(self.numJoints):
             state = p.getJointState(self.pandaUid, self.motorIndices[i])
@@ -100,6 +106,7 @@ class Panda:
         return np.array(qvel)
     
     def get_gripper_pose(self):
+        # 获取末端执行器位置和姿态
         state = p.getLinkState(self.pandaUid, self.pandaEndEffectorIndex)
         pos = state[0]
         orn = state[1]
@@ -107,6 +114,7 @@ class Panda:
 
 
     def getObservation(self):
+        # 获取部分观测值，返回观测字典
         observation = dict()
         observation["qpos"] = self.get_jointPoses()
         
@@ -118,6 +126,7 @@ class Panda:
         return observation
 
     def gripper_control(self,gripperAngle):
+        # 控制夹爪开合
         p.setJointMotorControl2(self.pandaUid,
                                 9,
                                 p.POSITION_CONTROL,
@@ -131,6 +140,7 @@ class Panda:
         
     ## 输入ee delta pos(3维)， orn不变
     def applyAction(self, actions):
+        # 获取当前末端执行器位置
         state = p.getLinkState(self.pandaUid, self.pandaEndEffectorIndex)
         curr_eepos = np.array(state[0])
         desire_eepos = curr_eepos + np.array(actions[:3])

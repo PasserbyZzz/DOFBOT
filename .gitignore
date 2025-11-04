@@ -2,3 +2,8 @@ dataset/
 Dofbot_sim/report.md
 Dofbot_ctrl/report.md
 Dofbot_rl/report.md
+Dofbot_rl/Grasp_DQN_TODO/runs/
+Dofbot_rl/Grasp_SAC_TODO/runs/
+Dofbot_rl/Grasp_DQN_TODO/__pycache__/
+Dofbot_rl/Grasp_SAC_TODO/__pycache__/
+Dofbot_sim/__pycache__/
