@@ -74,13 +74,19 @@ class PandaEnv(gym.Env):
         p.setGravity(0, 0, -9.8)
 
         # TODO: observation space
-        # if obs_mode == "state": ## 训练模式下使用
-        #     self.observation_space =
-        # elif obs_mode == "state_dict":  ## 字典形式，方便读取数据
-        #     self.observation_space =
+        if obs_mode == "state": ## 训练模式下使用
+            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(26,), dtype=np.float32)
+        elif obs_mode == "state_dict":  ## 字典形式，方便读取数据
+            self.observation_space = spaces.Dict({
+                "qpos": spaces.Box(low=-np.inf, high=np.inf, shape=(9,), dtype=np.float32),
+                "eepose": spaces.Box(low=-np.inf, high=np.inf, shape=(7,), dtype=np.float32),
+                "ee_to_object_pos": spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float32),
+                "object_pose": spaces.Box(low=-np.inf, high=np.inf, shape=(7,), dtype=np.float32),
+            })
 
         # TODO: action space
-        # self.action_space =
+        # action space: 0, 1, 2, 3, 4, 5, 6  分别对应 -dx, dx, -dy, dy, -dz, dz, static
+        self.action_space = spaces.Discrete(7)  ## 7个离散动作
     
         p.loadURDF("models/floor.urdf", [0, 0, -0.625], useFixedBase=True)
         p.loadURDF("models/table_collision/table.urdf", [0.5, 0, -0.625],p.getQuaternionFromEuler([0, 0, 0]),
@@ -164,6 +170,9 @@ class PandaEnv(gym.Env):
         Observation = self._panda.getObservation()
         
         # TODO： add suitable observations here
+        object_pos, object_orn = p.getBasePositionAndOrientation(self.object)
+        Observation["object_pose"] = np.array(object_pos + object_orn)
+        Observation["ee_to_object_pos"] = Observation["eepose"][:3] - Observation["object_pose"][:3]
 
         return Observation
     
@@ -171,7 +180,12 @@ class PandaEnv(gym.Env):
     def step(self, action):
 
         # TODO: Define suitable realAction here
-        # self.realAction = np.array([dx, dy, dz, 0.04])
+        d = 0.01
+        # action space: 0,1,2,3,4,5,6
+        dx = [-d, d, 0, 0, 0, 0, 0][action]
+        dy = [0, 0, -d, d, 0, 0, 0][action]
+        dz = [0, 0, 0, 0, -d, d, 0][action]
+        self.realAction = np.array([dx, dy, dz, 0.04])
 
 
         if self.terminated:
@@ -260,9 +274,19 @@ class PandaEnv(gym.Env):
         obs = self._get_obs_dict()
         info = self._get_info()
         
-        reward = 0
+        ## reaching reward
+        ee_to_object_pos = obs["ee_to_object_pos"]
+        ee_to_object_dist = (ee_to_object_pos[0]**2 + ee_to_object_pos[1]**2 + ee_to_object_pos[2]**2)**0.5
+        r_reaching = -10 * ee_to_object_dist  ## 越接近物体reward越高
+
+        ## arrival reward
+        r_arrival = 0
+        if ee_to_object_dist < 0.012:
+            r_arrival = 10
+
+        reward = r_reaching + r_arrival
         return reward
-    
+
     def render(self, ):
         if self.render_mode != "rgb_array" and self.render_mode != "human_image":
             return np.array([])
