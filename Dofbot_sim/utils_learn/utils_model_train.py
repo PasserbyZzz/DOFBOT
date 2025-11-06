@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.distributions as D
 import torch.nn.functional as F
-
+from sklearn.model_selection import train_test_split
 
 # ---------- 工具函数 ----------
 def select_cols(data_df, names):
@@ -19,8 +19,19 @@ def split_data(data_df, in_cols, out_cols):
     # 从 DataFrame 拆出输入/输出，并按 8:2 划分 train/test
     X = select_cols(data_df, in_cols)
     Y = select_cols(data_df, out_cols)
-    from sklearn.model_selection import train_test_split
+    
     return train_test_split(X, Y, test_size=0.2, random_state=42)
+
+def split_data_analytic(data_df, in_cols, out_cols, dofbot):
+    # 从 DataFrame 拆出输入/输出，并按 8:2 划分 train/test
+    X = select_cols(data_df, in_cols)
+    Y = select_cols(data_df, out_cols)
+    # 解析解
+    Y_analytic = analytic_fk(X, dofbot=dofbot)
+    # 残差
+    Y_residual = Y - Y_analytic
+
+    return train_test_split(X, Y_residual, Y_analytic, test_size=0.2, random_state=42)
 
 
 def compute_fk_loss(y_pred, y_true, w_pos=0.9, w_ori=0.1):
@@ -128,6 +139,31 @@ def plot_training_curves(history: dict, save_path: str):
     plt.close()
     print(f'📈 曲线已保存 → {save_path}')
 
+def analytic_fk(q, dofbot):
+    # 正运动学解析
+    q = np.array(q)
+    if q.shape[1] == 10:  # sin/cos 展开
+        q_angles = np.arctan2(q[:, ::2], q[:, 1::2])  # [B,5]
+    elif q.shape[1] == 5:  # 直接角度
+        q_angles = q
+    else:
+        raise ValueError(f"输入维度错误: q.shape={q.shape}, 期望为 [B,5] 或 [B,10]")
+
+    # 计算 FK
+    B = q_angles.shape[0]
+    pose_list = []
+
+    for i in range(B):
+        T = dofbot.fkine(q_angles[i])  # 正运动学计算
+        Tm = np.array(T.A)  # 取出4x4矩阵
+        xyz = Tm[:3, 3]  # 末端位置
+        rot = Tm[:3, :3].ravel()  # 展平旋转矩阵 (nx,ny,nz, ox,oy,oz, ax,ay,az)
+        pose = np.hstack([xyz, rot])
+        pose_list.append(pose)
+
+    # 返回 12 维：xyz + I9
+    pose = np.vstack(pose_list)  # [B, 12]
+    return pose
 
 # ---------- 唯一入口 ----------
 def train_dofbot_model(data_path,
@@ -144,7 +180,9 @@ def train_dofbot_model(data_path,
                        fk_path=None,
                        fk_hidden_layers=None,
                        w_pos=0.9,
-                       w_ori=0.1
+                       w_ori=0.1,
+                       use_analytic_fk=False,
+                       dofbot=None
                        ):
     # 数据加载、模型构造、训练、评估、保存
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -153,14 +191,12 @@ def train_dofbot_model(data_path,
     # 0. 确定输入/输出列名
     data_df = pd.read_csv(data_path)
     if mode == 'fk':
-        in_cols = in_cols or ['q1_sin', 'q1_cos', 'q2_sin', 'q2_cos', 'q3_sin', 'q3_cos', 'q4_sin', 'q4_cos', 'q5_sin',
-                              'q5_cos']
+        in_cols = in_cols or ['q1_sin', 'q1_cos', 'q2_sin', 'q2_cos', 'q3_sin', 'q3_cos', 'q4_sin', 'q4_cos', 'q5_sin', 'q5_cos']
         out_cols = out_cols or ['x', 'y', 'z', 'nx', 'ny', 'nz', 'ox', 'oy', 'oz', 'ax', 'ay', 'az']  # 默认 xyz+orn
     else:  # ik
         in_cols = in_cols or ['x', 'y', 'z', 'nx', 'ny', 'nz', 'ox', 'oy', 'oz', 'ax', 'ay', 'az']
-        out_cols = out_cols or ['q1_sin', 'q1_cos', 'q2_sin', 'q2_cos', 'q3_sin', 'q3_cos', 'q4_sin', 'q4_cos', 'q5_sin',
-                                'q5_cos']
-
+        out_cols = out_cols or ['q1_sin', 'q1_cos', 'q2_sin', 'q2_cos', 'q3_sin', 'q3_cos', 'q4_sin', 'q4_cos', 'q5_sin', 'q5_cos']
+        
         # 加载冻结 FK （基于已训练的FK模型监督训练）
         fk_ref = FlexibleMLP(len(out_cols), len(in_cols), hidden_layers=fk_hidden_layers, dropout=0.0,
                              activation='ReLU', block_type='res',
@@ -171,12 +207,21 @@ def train_dofbot_model(data_path,
             p.requires_grad = False
 
     # 1. 准备数据
-    x_train, x_test, y_train, y_test = split_data(data_df, in_cols, out_cols)
-    x_train = torch.tensor(x_train, dtype=torch.float32, device=device)
-    y_train = torch.tensor(y_train, dtype=torch.float32, device=device)
-    x_test = torch.tensor(x_test, dtype=torch.float32, device=device)
-    y_test = torch.tensor(y_test, dtype=torch.float32, device=device)
-
+    if use_analytic_fk and mode == 'fk':
+        x_train, x_test, y_train, y_test, y_analytic_train, y_analytic_test = split_data_analytic(data_df, in_cols, out_cols, dofbot)   
+        x_train = torch.tensor(x_train, dtype=torch.float32, device=device)
+        y_train = torch.tensor(y_train, dtype=torch.float32, device=device)
+        y_analytic_train = torch.tensor(y_analytic_train, dtype=torch.float32, device=device)
+        x_test = torch.tensor(x_test, dtype=torch.float32, device=device)
+        y_test = torch.tensor(y_test, dtype=torch.float32, device=device)
+        y_analytic_test = torch.tensor(y_analytic_test, dtype=torch.float32, device=device)
+    else:
+        x_train, x_test, y_train, y_test = split_data(data_df, in_cols, out_cols)
+        x_train = torch.tensor(x_train, dtype=torch.float32, device=device)
+        y_train = torch.tensor(y_train, dtype=torch.float32, device=device)
+        x_test = torch.tensor(x_test, dtype=torch.float32, device=device)
+        y_test = torch.tensor(y_test, dtype=torch.float32, device=device)
+    
     # 2. 输出目录
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     out_dir = Path("results/learn_model") / f"{model_type}_{mode}_{timestamp}"
@@ -201,11 +246,21 @@ def train_dofbot_model(data_path,
             model.train()
             opt.zero_grad()
             y_pred = model(x_train)
-            # y_pred = torch.tensor(y_pred, dtype=torch.float32, device=device)
+            
             # 计算损失
-            loss, info = compute_fk_loss(y_pred, y_train, w_pos=w_pos, w_ori=w_ori) \
-                if mode == 'fk' else \
-                compute_ik_loss(y_pred, y_train, pose_true=x_train, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+            if not use_analytic_fk:
+                if mode == 'fk':
+                    loss, info = compute_fk_loss(y_pred, y_train, w_pos=w_pos, w_ori=w_ori)
+                else:  # ik 
+                    loss, info = compute_ik_loss(y_pred, y_train, pose_true=x_train, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+            else:
+                if mode == 'fk':
+                    # 加上解析解
+                    y_pred = y_pred + y_analytic_train
+                    loss, info = compute_fk_loss(y_pred, y_train + y_analytic_train, w_pos=w_pos, w_ori=w_ori)
+                else:  # ik
+                    loss, info = compute_ik_loss(y_pred, y_train, pose_true=x_train, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+            
             # 反向传播
             loss.backward()
             opt.step()
@@ -214,9 +269,20 @@ def train_dofbot_model(data_path,
 
             # 每 epoch 记录测试
             with torch.no_grad():
-                test_loss, test_info = compute_fk_loss(model(x_test), y_test, w_pos=w_pos,
-                                                       w_ori=w_ori) if mode == 'fk' else compute_ik_loss(
-                    model(x_test), y_test, pose_true=x_test, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+                model.eval()
+                if not use_analytic_fk:
+                    if mode == 'fk':
+                        test_loss, test_info = compute_fk_loss(model(x_test), y_test, w_pos=w_pos, w_ori=w_ori)
+                    else:  # ik
+                        test_loss, test_info = compute_ik_loss(model(x_test), y_test, pose_true=x_test, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+                else:
+                    if mode == 'fk':
+                        # 加上解析解
+                        y_test_pred = model(x_test) + y_analytic_test
+                        test_loss, test_info = compute_fk_loss(y_test_pred, y_test + y_analytic_test, w_pos=w_pos, w_ori=w_ori)
+                    else:  # ik
+                        test_loss, test_info = compute_ik_loss(model(x_test), y_test, pose_true=x_test, fk_ref=fk_ref, w_pos=w_pos, w_ori=w_ori)
+            
             history['test'].append(test_loss.item())
             if (epoch + 1) % max(1, epochs // 100) == 0 or epoch == epochs - 1:
                 print(

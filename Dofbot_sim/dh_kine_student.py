@@ -69,15 +69,15 @@ dofbot = rtb.DHRobot(
 )
 
 # 打印标准 DH 参数表（alpha、a、d、theta、offset）
-print("========== Dofbot机器人 DH 参数 ==========")
-print(dofbot)
+# print("========== Dofbot机器人 DH 参数 ==========")
+# print(dofbot)
 
 # --------------------- 4. Part0 零位验证 ---------------------
 fkine_input0 = [0, 0, 0, 0, 0] # 全部关节置 0
 fkine_result0 = dofbot.fkine(fkine_input0)
-print("\n零位正解齐次变换矩阵:")
-print(fkine_result0)
-dofbot.plot(q=fkine_input0, block=False) # 3D 可视化（非阻塞模式）
+# print("\n零位正解齐次变换矩阵:")
+# print(fkine_result0)
+# dofbot.plot(q=fkine_input0, block=False) # 3D 可视化（非阻塞模式）
 # plt.savefig("figures/task_0", bbox_inches='tight', dpi=150)
 
 # ==============================================
@@ -93,33 +93,33 @@ dofbot.plot(q=fkine_input0, block=False) # 3D 可视化（非阻塞模式）
 # -------- 1.1 demo  pose ----------
 q_demo = [0., pi/3, pi/4, pi/5, 0.]
 T_demo = dofbot.fkine(q_demo)
-print("\n========== Part1-0 (demo) 正解 ==========")
-print(T_demo)
-dofbot.plot(q=q_demo, block=False)
+# print("\n========== Part1-0 (demo) 正解 ==========")
+# print(T_demo)
+# dofbot.plot(q=q_demo, block=False)
 # plt.savefig("figures/task_1_1", bbox_inches='tight', dpi=150)
 
 # -------- 1.2 pose 1 ----------
 q_demo = [pi/2, pi/5, pi/5, pi/5, pi]
 T_demo = dofbot.fkine(q_demo)
-print("\n========== Part1-1 (pose 1) 正解 ==========")
-print(T_demo)
-dofbot.plot(q=q_demo, block=False)
+# print("\n========== Part1-1 (pose 1) 正解 ==========")
+# print(T_demo)
+# dofbot.plot(q=q_demo, block=False)
 # plt.savefig("figures/task_1_2", bbox_inches='tight', dpi=150)
 
 # -------- 1.3 pose 2 ----------
 q_demo = [pi/3, pi/4, -pi/3, -pi/4, pi/2]
 T_demo = dofbot.fkine(q_demo)
-print("\n========== Part1-2 (pose 2) 正解 ==========")
-print(T_demo)
-dofbot.plot(q=q_demo, block=False)
+# print("\n========== Part1-2 (pose 2) 正解 ==========")
+# print(T_demo)
+# dofbot.plot(q=q_demo, block=False)
 # plt.savefig("figures/task_1_3", bbox_inches='tight', dpi=150)
 
 # -------- 1.4 pose 3 ----------
 q_demo = [-pi/2, pi/3, -2*pi/3, pi/3, pi/3]
 T_demo = dofbot.fkine(q_demo)
-print("\n========== Part1-3 (pose 3) 正解 ==========")
-print(T_demo)
-dofbot.plot(q=q_demo, block=False)
+# print("\n========== Part1-3 (pose 3) 正解 ==========")
+# print(T_demo)
+# dofbot.plot(q=q_demo, block=False)
 # plt.savefig("figures/task_1_4", bbox_inches='tight', dpi=150)
 
 
@@ -168,9 +168,9 @@ T_des_demo = np.array([
     [ 0., 0., 0., 1. ]
 ])
 q_ik_demo = dofbot.ik_LM(T_des_demo)[0]   # 取返回元组第 0 个元素
-print("\n========== Part2-0 (demo) 逆解 ==========")
-print("关节角（rad）：", np.array(q_ik_demo))
-dofbot.plot(q=q_ik_demo, block=False)
+# print("\n========== Part2-0 (demo) 逆解 ==========")
+# print("关节角（rad）：", np.array(q_ik_demo))
+# dofbot.plot(q=q_ik_demo, block=False)
 # plt.savefig("figures/task_2_1", bbox_inches='tight', dpi=150)
 
 # -------- 2.2 目标 1 ----------
@@ -181,9 +181,9 @@ T_des_demo = np.array([
     [0., 0., 0., 1. ]
 ])
 q_ik_demo = dofbot.ik_LM(T_des_demo)[0]   # 取返回元组第 0 个元素
-print("\n========== Part2-1 (pose 1) 逆解 ==========")
-print("关节角（rad）：", np.array(q_ik_demo))
-dofbot.plot(q=q_ik_demo, block=False)
+# print("\n========== Part2-1 (pose 1) 逆解 ==========")
+# print("关节角（rad）：", np.array(q_ik_demo))
+# dofbot.plot(q=q_ik_demo, block=False)
 # plt.savefig("figures/task_2_2", bbox_inches='tight', dpi=150)
 
 # -------- 2.3 目标 2 ----------
@@ -194,9 +194,9 @@ T_des_demo = np.array([
     [0.,        0., 0.,        1. ]
 ])
 q_ik_demo = dofbot.ik_LM(T_des_demo)[0]   # 取返回元组第 0 个元素
-print("\n========== Part2-1 (pose 2) 逆解 ==========")
-print("关节角（rad）：", np.array(q_ik_demo))
-dofbot.plot(q=q_ik_demo, block=False)
+# print("\n========== Part2-1 (pose 2) 逆解 ==========")
+# print("关节角（rad）：", np.array(q_ik_demo))
+# dofbot.plot(q=q_ik_demo, block=False)
 # plt.savefig("figures/task_2_3", bbox_inches='tight', dpi=150)
 
 # -------- 2.4 目标 3 ----------
@@ -207,9 +207,9 @@ T_des_demo = np.array([
     [ 0.,     0.,     0.,     1.     ]
 ])
 q_ik_demo = dofbot.ik_LM(T_des_demo)[0]   # 取返回元组第 0 个元素
-print("\n========== Part2-1 (pose 3) 逆解 ==========")
-print("关节角（rad）：", np.array(q_ik_demo))
-dofbot.plot(q=q_ik_demo, block=False)
+# print("\n========== Part2-1 (pose 3) 逆解 ==========")
+# print("关节角（rad）：", np.array(q_ik_demo))
+# dofbot.plot(q=q_ik_demo, block=False)
 # plt.savefig("figures/task_2_4", bbox_inches='tight', dpi=150)
 
 
@@ -268,4 +268,4 @@ ax.set_zlim(z_mid - max_range / 2, z_mid + max_range / 2)
 # 保存图像
 plt.tight_layout()
 # plt.savefig("figures/task_3", bbox_inches='tight', dpi=150)
-plt.show(block=False)
+# plt.show(block=False)
