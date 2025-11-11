@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     for i in range(len(points) - 1):
         print("From State:", i, "to State:", i + 1)
-        # 取出路点并做路径规划得到路径
+        # 取出路径点并做路径规划得到路径
         path = linear_interpolation(points[i], points[i + 1], n=30)
         for p in path:
             # 执行路径上各点
