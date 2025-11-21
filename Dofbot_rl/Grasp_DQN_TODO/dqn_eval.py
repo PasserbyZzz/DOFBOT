@@ -63,9 +63,11 @@ def evaluate(
 def make_env(env_id, seed, idx, capture_video, run_name):
     def thunk():
         if capture_video and idx == 0:
+            print(f"Recording video to {run_name}")
             env = gym.make(env_id, obs_mode="state", render_mode="rgb_array")
-            env = gym.wrappers.RecordVideo(env, f"{run_name}", name_prefix="20M-front",)
+            env = gym.wrappers.RecordVideo(env, f"results/record", name_prefix="20M-front",)
         else:
+            print(f"Not recording video for {run_name}")
             env = gym.make(env_id, obs_mode="state", render_mode="human")
         # env = gym.wrappers.RecordEpisodeStatistics(env)
         env.action_space.seed(seed)
