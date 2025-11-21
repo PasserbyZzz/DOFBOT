@@ -17,7 +17,7 @@ from utils.buffers import ReplayBuffer
 from gymnasium.envs.registration import register
 import panda_env
 
-
+# cleanrl 风格
 
 @dataclass
 class Args:
@@ -51,7 +51,7 @@ class Args:
     env_id: str = "PandaEnv-v1"
     """the id of the environment"""
     max_episode_steps: int = 300
-    total_timesteps: int = 2_000_000
+    total_timesteps: int = 5_000_000
     """total timesteps of the experiments"""
     learning_rate: float = 2.5e-4
     """the learning rate of the optimizer"""
@@ -96,6 +96,7 @@ def make_env(env_id, seed, idx, capture_video, run_name):
 
 # ALGO LOGIC: initialize agent here:
 class QNetwork(nn.Module):
+    # Q(s, a)
     def __init__(self, env):
         super().__init__()
         self.network = nn.Sequential(
@@ -111,6 +112,7 @@ class QNetwork(nn.Module):
 
 
 def linear_schedule(start_e: float, end_e: float, duration: int, t: int):
+    # epsilon 线性衰减
     slope = (end_e - start_e) / duration
     return max(slope * t + start_e, end_e)
 
@@ -143,11 +145,14 @@ if __name__ == "__main__":
     )
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
 
+    # 初始化 Q 网络
     q_network = QNetwork(envs).to(device)
     optimizer = optim.Adam(q_network.parameters(), lr=args.learning_rate)
+    # 初始化 目标网络
     target_network = QNetwork(envs).to(device)
     target_network.load_state_dict(q_network.state_dict())
 
+    # 初始化经验回放池
     rb = ReplayBuffer(
         args.buffer_size,
         envs.single_observation_space,
@@ -161,7 +166,9 @@ if __name__ == "__main__":
     obs, _ = envs.reset(seed=args.seed)
     for global_step in range(args.total_timesteps):
         # ALGO LOGIC: put action logic here
+        # 计算当前 epsilon
         epsilon = linear_schedule(args.start_e, args.end_e, args.exploration_fraction * args.total_timesteps, global_step)
+        # 动作选择
         if random.random() < epsilon:
             actions = np.array([envs.single_action_space.sample() for _ in range(envs.num_envs)])
         else:
@@ -169,8 +176,10 @@ if __name__ == "__main__":
             actions = torch.argmax(q_values, dim=1).cpu().numpy()
 
         # TRY NOT TO MODIFY: execute the game and log data.
+        # 环境交互
         next_obs, rewards, terminations, truncations, infos = envs.step(actions)
         # TRY NOT TO MODIFY: record rewards for plotting purposes
+        # 如果回合结束，记录回报
         if "final_info" in infos:
             for info in infos["final_info"]:
                 if info and "episode" in info:
@@ -180,6 +189,7 @@ if __name__ == "__main__":
                     writer.add_scalar("charts/episodic_avgreward", info["episode"]["r"] / info["episode"]["l"], global_step)
 
         # TRY NOT TO MODIFY: save data to reply buffer; handle `final_observation`
+        # 保存数据到经验回放池，处理 `final_observation`
         real_next_obs = next_obs.copy()
         for idx, trunc in enumerate(truncations):
             if trunc:
@@ -190,9 +200,12 @@ if __name__ == "__main__":
         obs = next_obs
 
         # ALGO LOGIC: training.
+        # 开始训练 Q 网络
         if global_step > args.learning_starts:
             if global_step % args.train_frequency == 0:
+                # resample from replay buffer
                 data = rb.sample(args.batch_size)
+                # compute loss
                 with torch.no_grad():
                     target_max, _ = target_network((data.next_observations).type(torch.float32)).max(dim=1)
                     td_target = data.rewards.flatten() + args.gamma * target_max * (1 - data.dones.flatten())
@@ -205,7 +218,7 @@ if __name__ == "__main__":
                     print("SPS:", int(global_step / (time.time() - start_time)))
                     writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
-                # optimize the model
+                # update Q network
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
@@ -217,12 +230,13 @@ if __name__ == "__main__":
                         args.tau * q_network_param.data + (1.0 - args.tau) * target_network_param.data
                     )
 
+            # save model
             if args.save_model and ((global_step + 1) % args.save_frequency) == 0 :
                 model_path = f"runs/{run_name}/{args.exp_name}_{global_step}.cleanrl_model"
                 torch.save(q_network.state_dict(), model_path)
                 print(f"model saved to {model_path}")
                 
-                
+    # save final model
     if args.save_model:
         model_path = f"runs/{run_name}/{args.exp_name}_final.cleanrl_model"
         torch.save(q_network.state_dict(), model_path)

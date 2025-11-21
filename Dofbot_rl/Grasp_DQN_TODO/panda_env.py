@@ -17,33 +17,38 @@ register(
     entry_point="panda_env:PandaEnv",
     max_episode_steps=300,
 )
+
 ## place is_grasped判断方式改了
 class ObjectPanda:
+    # object类
     def __init__(self, urdfPath, block,num):
         self.id = p.loadURDF(urdfPath)
         self.half_height = 0.025 if block else 0.0745
         self.num = num
 
         self.block = block
-    def reset(self):
 
-        if self.num==1:
+    def reset(self):
+        # 重置物体位置（逆运动学可解）
+        if self.num == 1:
             p.resetBasePositionAndOrientation(self.id,
-                                         np.array([ 0.615, 0.1,
+                                         np.array([0.615, 0.1,
                                                    self.half_height]),
-                                        p.getQuaternionFromEuler([0, 0,0]))
+                                        p.getQuaternionFromEuler([0, 0, 0]))
         else:
             p.resetBasePositionAndOrientation(self.id,
-                                         np.array([ 0.615, -0.1,
+                                         np.array([0.615, -0.1,
                                                    0.005]),
-                                        p.getQuaternionFromEuler([0, 0,0]))
+                                        p.getQuaternionFromEuler([0, 0, 0]))
 
     def pos_and_orn(self):
+        # 获取物体位置和姿态
         pos, orn = p.getBasePositionAndOrientation(self.id)
         # euler = p.getEulerFromQuaternion(quat)
         return pos, orn
     
 class PandaEnv(gym.Env):
+    # Panda 机械臂环境类
     metadata = {'render_modes': ['human', 'rgb_array', 'human_image'], 'render_fps': 120}
     
     def __init__(self, obs_mode="state_dict", render_mode="rgb_array"):
@@ -73,6 +78,7 @@ class PandaEnv(gym.Env):
         p.setTimeStep(self._timeStep)
         p.setGravity(0, 0, -9.8)
 
+        # 定义 观测空间
         # TODO: observation space
         if obs_mode == "state": ## 训练模式下使用
             self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(26,), dtype=np.float32)
@@ -84,12 +90,13 @@ class PandaEnv(gym.Env):
                 "object_pose": spaces.Box(low=-np.inf, high=np.inf, shape=(7,), dtype=np.float32),
             })
 
+        # 定义 动作空间
         # TODO: action space
         # action space: 0, 1, 2, 3, 4, 5, 6  分别对应 -dx, dx, -dy, dy, -dz, dz, static
         self.action_space = spaces.Discrete(7)  ## 7个离散动作
     
         p.loadURDF("models/floor.urdf", [0, 0, -0.625], useFixedBase=True)
-        p.loadURDF("models/table_collision/table.urdf", [0.5, 0, -0.625],p.getQuaternionFromEuler([0, 0, 0]),
+        p.loadURDF("models/table_collision/table.urdf", [0.5, 0, -0.625], p.getQuaternionFromEuler([0, 0, 0]),
                    useFixedBase=True)
         self._panda = Panda()
         self._object1 = ObjectPanda("models/box_green.urdf", block=True,num=1)
@@ -98,6 +105,7 @@ class PandaEnv(gym.Env):
         self.target_pos = np.array([0.615, 0, 0.1])
 
     def create_box(self, half_size, color, pos, orn, collision=True, mass=0):
+        # 在仿真中创建简单的方块
         if collision:
             collision = p.createCollisionShape(
                 shapeType=p.GEOM_BOX,
@@ -120,6 +128,7 @@ class PandaEnv(gym.Env):
         return box_id
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
+        # 重置环境到初始状态，获取初始观测值和信息
         self.terminated = 0
         super().reset(seed=seed)
         # p.resetBasePositionAndOrientation(self.goal, self._panda.inital_eepose[0], self._panda.inital_eepose[1])
@@ -131,11 +140,12 @@ class PandaEnv(gym.Env):
         info = self._get_info()
         return Observation, info
 
-
     def is_grasped(self):
+        # 判断物体是否被夹住
         min_force = 0.5
         contact_finger1 = p.getContactPoints(bodyA=self._panda.pandaUid, bodyB=self.object, linkIndexA=9)
         contact_finger2 = p.getContactPoints(bodyA=self._panda.pandaUid, bodyB=self.object, linkIndexA=10)
+        # 机械臂的两个手指与物体之间是否有接触力
         if bool(contact_finger1):
             # print("contact_finger1", contact_finger1)
             # print("contact_finger1[7]", contact_finger1[0][7])
@@ -146,12 +156,13 @@ class PandaEnv(gym.Env):
             normal2 = abs(contact_finger2[0][7][1])  ## y轴方向力
         else:
             normal2 = 0
-        
+        # 接触力是否大于阈值
         if (normal1 > min_force) and (normal2 > min_force):
             return True
         return False
         
     def _get_obs(self):
+        # 获取当前观测值
         Observation = self._get_obs_dict()
 
         if self.obs_mode == "state_dict":
@@ -167,9 +178,10 @@ class PandaEnv(gym.Env):
             return self._observation
         
     def _get_obs_dict(self):
+        # 获取字典格式的观测数据
         Observation = self._panda.getObservation()
         
-        # TODO： add suitable observations here
+        # TODO: add suitable observations here
         object_pos, object_orn = p.getBasePositionAndOrientation(self.object)
         Observation["object_pose"] = np.array(object_pos + object_orn)
         Observation["ee_to_object_pos"] = Observation["eepose"][:3] - Observation["object_pose"][:3]
@@ -178,7 +190,7 @@ class PandaEnv(gym.Env):
     
     ## discrete action: -dx, dx, -dy, dy, -dz, dz, static
     def step(self, action):
-
+        # 执行一步环境交互
         # TODO: Define suitable realAction here
         d = 0.01
         # action space: 0,1,2,3,4,5,6
@@ -186,7 +198,6 @@ class PandaEnv(gym.Env):
         dy = [0, 0, -d, d, 0, 0, 0][action]
         dz = [0, 0, 0, 0, -d, d, 0][action]
         self.realAction = np.array([dx, dy, dz, 0.04])
-
 
         if self.terminated:
             self.realAction = np.array([0, 0, 0, 0])
@@ -201,6 +212,7 @@ class PandaEnv(gym.Env):
         reward = self._get_reward()
         info = self._get_info()
         
+        # 返回当前观测值、奖励、是否终止、是否截断和额外信息
         return self._observation, reward, terminated, truncated, info
   
     # continous action
@@ -220,6 +232,7 @@ class PandaEnv(gym.Env):
     #     return self._observation, reward, terminated, truncated, info
     
     def _termination(self):
+        # 判断当前 Episode 是否结束
         #print (self._kuka.endEffectorPos[2])
         state = p.getLinkState(self._panda.pandaUid, self._panda.pandaEndEffectorIndex)
         actualEndEffectorPos = state[0]
@@ -229,17 +242,22 @@ class PandaEnv(gym.Env):
         if self.terminated:
             self._observation = self.getExtendedObservation()
             return True
+        
+        # 计算末端到物体的距离
         maxDist = 0.012
         obs = self._get_obs_dict()  
         ee_to_object_pos = obs["ee_to_object_pos"] 
         ee_to_object_dist = (ee_to_object_pos[0]**2 + ee_to_object_pos[1]**2 + ee_to_object_pos[2]**2)**0.5
+        # 如果距离小于阈值，触发抓取尝试
         if ee_to_object_dist < maxDist:
             self.terminated = 1
         
             print("terminating, closing gripper, attempting grasp")
             #start grasp and terminate
             fingerAngle = 0.3
-            for i in range(100):
+
+            # 执行闭合夹爪动作
+            for i in range(100): # control_decimation
                 graspAction = [0, 0, 0, 0]
                 self._panda.applyAction(graspAction)
                 p.stepSimulation()
@@ -247,17 +265,22 @@ class PandaEnv(gym.Env):
                     time.sleep(self._timeStep)
                 fingerAngle = fingerAngle - (0.3 / 100.)
 
-            for i in range(1000):
+            # 执行抬升动作
+            for i in range(1000): # control_decimation
                 graspAction = [0, 0, 0.005, 0]
                 self._panda.applyAction(graspAction)
                 p.stepSimulation()
                 if self.render_mode == "human":
                     time.sleep(self._timeStep)
+
+                # 检查物体高度是否超过 0.23m，若超过则视为成功
                 object_pos, object_orn = p.getBasePositionAndOrientation(self.object)
                 if (object_pos[2] > 0.23):
-                    #print("BLOCKPOS!")
+                    print("BLOCKPOS!")
                     #print(blockPos[2])
                     break
+
+                # 检查末端执行器高度是否超过 0.5m，若超过则终止
                 state = p.getLinkState(self._panda.pandaUid, self._panda.pandaEndEffectorIndex)
                 actualEndEffectorPos = state[0]
                 if (actualEndEffectorPos[2] > 0.5):
@@ -271,6 +294,7 @@ class PandaEnv(gym.Env):
 
     # TODO: 完善reward function
     def _get_reward(self):
+        # 计算奖励
         obs = self._get_obs_dict()
         info = self._get_info()
         
@@ -288,6 +312,7 @@ class PandaEnv(gym.Env):
         return reward
 
     def render(self, ):
+        # 渲染环境
         if self.render_mode != "rgb_array" and self.render_mode != "human_image":
             return np.array([])
 
@@ -316,4 +341,5 @@ class PandaEnv(gym.Env):
         return rgb_array
     
     def get_init_eepose(self,):
+        # 获取初始末端执行器位姿
         return self._panda.inital_eepose

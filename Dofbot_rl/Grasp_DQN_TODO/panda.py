@@ -68,8 +68,7 @@ class Panda:
                 index=index+1
         state = p.getLinkState(self.pandaUid, self.pandaEndEffectorIndex)
 
-
-    def joint_control(self,jointPoses):   
+    def joint_control(self, jointPoses):   
         # 控制机械臂关节到指定位置       
         for i in range(self.numJoints - 2):
             p.setJointMotorControl2(bodyUniqueId=self.pandaUid, jointIndex=self.motorIndices[i], controlMode=p.POSITION_CONTROL,
@@ -87,7 +86,6 @@ class Panda:
             jointPoses = p.calculateInverseKinematics(self.pandaUid, self.pandaEndEffectorIndex, pos, orn_new,
                                                       self.ll, self.ul, self.jr, self.rp)
         return jointPoses[:7]
-
 
     def get_jointPoses(self):
         # 获取当前关节角度
@@ -112,7 +110,6 @@ class Panda:
         orn = state[1]
         return pos,orn
 
-
     def getObservation(self):
         # 获取部分观测值，返回观测字典
         observation = dict()
@@ -120,8 +117,7 @@ class Panda:
         
         pos, orn = self.get_gripper_pose()
         # euler = p.getEulerFromQuaternion(orn)
-        observation["eepose"] = np.array(pos+orn)
-        
+        observation["eepose"] = np.array(pos + orn)
         
         return observation
 
@@ -140,7 +136,7 @@ class Panda:
         
     ## 输入ee delta pos(3维)， orn不变
     def applyAction(self, actions):
-        # 获取当前末端执行器位置
+        # 应用动作，更新末端执行器位置
         state = p.getLinkState(self.pandaUid, self.pandaEndEffectorIndex)
         curr_eepos = np.array(state[0])
         desire_eepos = curr_eepos + np.array(actions[:3])

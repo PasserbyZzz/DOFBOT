@@ -1,5 +1,8 @@
 import random
 from typing import Callable
+import os
+import datetime
+import pybullet as p
 
 import gymnasium as gym
 import numpy as np
@@ -24,6 +27,13 @@ def evaluate(
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
+    save_dir = "results/record"
+    os.makedirs(save_dir, exist_ok=True)
+    mp4_path = os.path.join(save_dir, datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".mp4")
+    
+    log_id = p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, mp4_path)
+    print(f"Started recording video to {mp4_path}")
+
     obs, _ = envs.reset()
     episodic_termination = []
     success = 0
@@ -41,7 +51,12 @@ def evaluate(
             if terminated:
                 success += 1
         obs = next_obs
-    success_rate = success/len(episodic_termination)
+    
+    if log_id >= 0:
+        p.stopStateLogging(log_id)
+        print(f"Stopped recording video.")
+
+    success_rate = success / len(episodic_termination)
     print("Success Rate:", success_rate)
     return success_rate
 
@@ -63,10 +78,10 @@ if __name__ == "__main__":
     from dqn_train import QNetwork
     
     evaluate(
-        "runs/dqn_demo/dqn_train_5499999.cleanrl_model",
+        "runs/dqn_demo/dqn_train_final.cleanrl_model",
         make_env,
         "PandaEnv-v1",
-        eval_episodes=5,
+        eval_episodes=20,
         run_name=f"eval/test",
         Model=QNetwork,
         device="cpu",
