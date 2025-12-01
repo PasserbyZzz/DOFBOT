@@ -18,9 +18,9 @@ register(
     max_episode_steps=300,
 )
 
-## place is_grasped判断方式改了
+## place is_grasped 判断方式改了
 class ObjectPanda:
-    # object类
+    # object 类
     def __init__(self, urdfPath, block,num):
         self.id = p.loadURDF(urdfPath)
         self.half_height = 0.025 if block else 0.0745

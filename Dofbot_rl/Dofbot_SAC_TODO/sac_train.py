@@ -1,4 +1,5 @@
 # docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/sac/#sac_continuous_actionpy
+# $env:KMP_DUPLICATE_LIB_OK="TRUE"
 import os
 import random
 import time
@@ -14,8 +15,9 @@ import tyro
 from torch.utils.tensorboard import SummaryWriter
 
 from utils.buffers import ReplayBuffer
-import dofbotGymReachEnv
+import dofbot_env
 
+# cleanrl 风格
 
 @dataclass
 class Args:
@@ -27,7 +29,7 @@ class Args:
     """if toggled, `torch.backends.cudnn.deterministic=False`"""
     cuda: bool = True
     """if toggled, cuda will be enabled by default"""
-    track: bool = True
+    track: bool = False
     """if toggled, this experiment will be tracked with Weights and Biases"""
     wandb_project_name: str = "Dofbot-sac"
     """the wandb's project name"""
@@ -39,7 +41,7 @@ class Args:
     # Algorithm specific arguments
     env_id: str = "DofbotReachEnv-v1"
     """the environment id of the task"""
-    total_timesteps: int = 1_000_000
+    total_timesteps: int = 5_000_000
     """total timesteps of the experiments"""
     num_envs: int = 1
     """the number of parallel game environments"""

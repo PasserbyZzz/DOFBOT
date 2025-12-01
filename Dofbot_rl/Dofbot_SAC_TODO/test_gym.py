@@ -2,7 +2,7 @@ import numpy as np
 import time
 import copy
 from scipy.spatial.transform import Rotation as R
-import dofbotGymReachEnv
+import dofbot_env
 import gymnasium as gym
 
 def make_env(env_id, idx):

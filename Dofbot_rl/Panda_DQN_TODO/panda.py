@@ -121,7 +121,7 @@ class Panda:
         
         return observation
 
-    def gripper_control(self,gripperAngle):
+    def gripper_control(self, gripperAngle):
         # 控制夹爪开合
         p.setJointMotorControl2(self.pandaUid,
                                 9,
