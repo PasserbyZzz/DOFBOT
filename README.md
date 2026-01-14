@@ -81,13 +81,13 @@
     <tr>
       <td align="center">
         <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
-             width="400" 
+             width="350" 
              alt="大作业 3">
         <br>
       </td>
       <td align="center">
         <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
-             width="400" 
+             width="350" 
              alt="拓展任务">
         <br>
       </td>
