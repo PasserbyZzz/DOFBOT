@@ -61,7 +61,7 @@
 ### 大作业 1
 
 <div align="center">
-    <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_sim/results/record/20251024_132419.gif" 
+    <img src="Dofbot_sim/results/record/20251024_132419.gif" 
         alt="大作业 1" 
         style="width: 40%; max-width: 800px;">
 </div>
@@ -69,21 +69,21 @@
 ### 大作业 2
 
 <div align="center">
-    <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_ctrl/report/实机视频.gif" 
+    <img src="Dofbot_ctrl/report/实机视频.gif" 
     alt="大作业 2" 
-    style="width: 40%; max-width: 800px;">
+    style="width: 20%; max-width: 800px;">
 </div>
 
 ### 大作业 3
 
 <div align="center">
     <div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-        <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
+        <img src="Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
              alt="大作业 3" 
              style="width: 100%; max-width: 400px;">
     </div>
     <div style="display: inline-block; width: 48%; vertical-align: top;">
-        <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
+        <img src="Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
              alt="拓展任务" 
              style="width: 100%; max-width: 400px;">
     </div>
