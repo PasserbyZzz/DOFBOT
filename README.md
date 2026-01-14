@@ -58,21 +58,26 @@
 
 ## 效果展示
 
-### 大作业 1
+### 大作业 1 2
 
-<div align="center">
-    <img src="Dofbot_sim/results/record/20251024_132419.gif" 
-        alt="大作业 1" 
-        style="width: 40%; max-width: 800px;">
-</div>
-
-### 大作业 2
-
-<div align="center">
-    <img src="Dofbot_ctrl/report/实机视频.gif" 
-    alt="大作业 2" 
-    style="width: 20%; max-width: 800px;">
-</div>
+<p align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="Dofbot_sim/results/record/20251024_132419.gif" 
+             width="350" 
+             alt="大作业 1">
+        <br>
+      </td>
+      <td align="center">
+        <img src="Dofbot_ctrl/report/实机视频.gif" 
+             width="150" 
+             alt="大作业 2">
+        <br>
+      </td>
+    </tr>
+  </table>
+</p>
 
 ### 大作业 3
 
