@@ -76,25 +76,31 @@
 
 ### 大作业 3
 
-<div align="center">
-    <div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-        <img src="Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
-             alt="大作业 3" 
-             style="width: 100%; max-width: 400px;">
-    </div>
-    <div style="display: inline-block; width: 48%; vertical-align: top;">
-        <img src="Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
-             alt="拓展任务" 
-             style="width: 100%; max-width: 400px;">
-    </div>
-</div>
+<p align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
+             width="400" 
+             alt="大作业 3">
+        <br>
+      </td>
+      <td align="center">
+        <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
+             width="400" 
+             alt="拓展任务">
+        <br>
+      </td>
+    </tr>
+  </table>
+</p>
 
 ## 文件目录
 
 - DOFBOT
   - Dofbot：Dofbot 上位机，用于人工标定关节角度
   - Dofbot_ctrl：Dofbot 真机部署（大作业 2）
-  - Dofbot_sim：DH 参数建模、正逆运动学等（大作业 1）
+  - Dofbot_sim：DH 参数建模、正逆运动学、机械臂抓取等（大作业 1）
   - Dofbot_rl：
     - Pnada_SAC_TODO：SAC 算法训练 Dofbot 机械臂抓取（拓展任务）
     - Dofbot_DQN_TODO：DQN 算法训练 franka-panda 机械臂抓取（大作业 3）
