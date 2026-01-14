@@ -78,12 +78,12 @@
 
 <div align="center">
     <div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top">
-        <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_rl/Dofbot_DQN_TODO/results/record/20251121_202336.gif" 
+        <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
              alt="大作业 3" 
              style="width: 100%; max-width: 400px;">
     </div>
     <div style="display: inline-block; width: 48%; vertical-align: top;">
-        <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_rl/Panda_SAC_TODO/results/record/20251201_175330.gif" 
+        <img src="https://github.com/PasserbyZzz/DOFBOT/blob/main/Dofbot_rl/Dofbot_SAC_TODO/results/record/20251201_175330.gif" 
              alt="拓展任务" 
              style="width: 100%; max-width: 400px;">
     </div>
@@ -96,8 +96,8 @@
   - Dofbot_ctrl：Dofbot 真机部署（大作业 2）
   - Dofbot_sim：DH 参数建模、正逆运动学等（大作业 1）
   - Dofbot_rl：
-    - Pnada_SAC_TODO：SAC 算法训练 franka-panda 机械臂抓取（拓展任务）
-    - Dofbot_DQN_TODO：DQN 算法训练 Dofbot 机械臂抓取（大作业 3）
+    - Pnada_SAC_TODO：SAC 算法训练 Dofbot 机械臂抓取（拓展任务）
+    - Dofbot_DQN_TODO：DQN 算法训练 franka-panda 机械臂抓取（大作业 3）
   - HWs：平时作业
 
 ## 邮箱
