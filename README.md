@@ -111,6 +111,8 @@
     - Dofbot_DQN_TODO：DQN 算法训练 franka-panda 机械臂抓取（大作业 3）
   - HWs：平时作业
 
+_注意：_ 请分别以 `Dofbot_sim` `Dofbot_ctrl` ` Dofbot_DQN_TODO` 或 `Pnada_SAC_TODO` 为根目录运行！
+
 ## 邮箱
 
 任何疑问，欢迎邮件交流：**`passerby_zzz@sjtu.edu.cn`** !
