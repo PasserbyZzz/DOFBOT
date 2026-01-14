@@ -61,7 +61,7 @@
 ### 大作业 1 2
 
 <p align="center">
-  <table>
+  <table align="center">
     <tr>
       <td align="center">
         <img src="Dofbot_sim/results/record/20251024_132419.gif" 
@@ -82,7 +82,7 @@
 ### 大作业 3
 
 <p align="center">
-  <table>
+  <table align="center">
     <tr>
       <td align="center">
         <img src="https://github.com/PasserbyZzz/DOFBOT/raw/main/Dofbot_rl/Panda_DQN_TODO/results/record/20251121_202336.gif" 
