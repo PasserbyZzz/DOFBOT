@@ -102,14 +102,14 @@
 
 ## 文件目录
 
-- DOFBOT
-  - Dofbot：Dofbot 上位机，用于人工标定关节角度
-  - Dofbot_ctrl：Dofbot 真机部署（大作业 2）
-  - Dofbot_sim：DH 参数建模、正逆运动学、机械臂抓取等（大作业 1）
-  - Dofbot_rl：
-    - Pnada_SAC_TODO：SAC 算法训练 Dofbot 机械臂抓取（拓展任务）
-    - Dofbot_DQN_TODO：DQN 算法训练 franka-panda 机械臂抓取（大作业 3）
-  - HWs：平时作业
+- **DOFBOT**
+  - **Dofbot**：Dofbot 上位机，用于人工标定关节角度
+  - **Dofbot_ctrl**：Dofbot 真机部署（大作业 2）
+  - **Dofbot_sim**：DH 参数建模、正逆运动学、机械臂抓取等（大作业 1）
+  - **Dofbot_rl**：
+    - **Pnada_SAC_TODO**：SAC 算法训练 Dofbot 机械臂抓取（拓展任务）
+    - **Dofbot_DQN_TODO**：DQN 算法训练 franka-panda 机械臂抓取（大作业 3）
+  - **HWs**：平时作业
 
 _注意：_ 请分别以 `Dofbot_sim` `Dofbot_ctrl` ` Dofbot_DQN_TODO` 或 `Pnada_SAC_TODO` 为根目录运行！
 
