@@ -103,7 +103,7 @@
 ## 文件目录
 
 - **DOFBOT**
-  - **Dofbot**：Dofbot 上位机，用于人工标定关节角度
+  - **Dofbot**：Dofbot 上位机，用于人工标定关节角度（大作业 2）
   - **Dofbot_ctrl**：Dofbot 真机部署（大作业 2）
   - **Dofbot_sim**：DH 参数建模、正逆运动学、机械臂抓取等（大作业 1）
   - **Dofbot_rl**：
